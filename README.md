@@ -222,6 +222,21 @@ public URL. `serve_remote.py` puts the same three tools online behind a
 [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)
 quick tunnel and prints a URL you add as a **custom connector**.
 
+There are two ways to put it online. **Railway** (below) is recommended for anything permanent;
+the **local cloudflared tunnel** is fine for a quick test.
+
+### Option A — Railway (recommended: permanent, always-on)
+
+A stable URL that never changes and runs 24/7 without your computer being on — the right choice
+for a demo or a shared team connector. Full walkthrough: **[DEPLOY_RAILWAY.md](DEPLOY_RAILWAY.md)**.
+
+In short: deploy this repo on [Railway](https://railway.app), set `ANTHROPIC_API_KEY` and
+`HIVEMIND_TOKEN` as environment variables, generate a domain, and paste
+`https://<your-app>.up.railway.app/mcp-<token>` into **Connectors → Add custom connector**.
+It runs on Railway's Linux, so Windows/macOS/Linux users all get the same stable URL.
+
+### Option B — Local machine + cloudflared tunnel
+
 **1. Install cloudflared** (one time):
 ```
 Windows:  winget install Cloudflare.cloudflared
@@ -258,7 +273,7 @@ the real lock.
 ### Caveats
 - **Your machine must stay on** with `serve_remote.py` running while you use it remotely.
 - **Free tunnels rotate hostnames** — each restart prints a new URL, so re-paste it into the
-  connector. For a permanent URL, set up a
+  connector. For a permanent URL, deploy to Railway (Option A above) or set up a
   [named Cloudflare tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-remote-tunnel/)
   with a domain you own and pin that host instead.
 

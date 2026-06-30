@@ -74,7 +74,10 @@ def main() -> None:
     port = os.environ.get("HIVEMIND_HTTP_PORT", "8765")
 
     print(f"[1/2] Starting hivemind HTTP server on 127.0.0.1:{port} ...")
-    server = subprocess.Popen([str(py), str(HERE / "mcp_http.py")])
+    # Pin to localhost so the tunnel is the only entry point (mcp_http.py defaults
+    # to 0.0.0.0 for cloud hosts like Railway).
+    local_env = {**os.environ, "HIVEMIND_HTTP_HOST": "127.0.0.1", "HIVEMIND_HTTP_PORT": port}
+    server = subprocess.Popen([str(py), str(HERE / "mcp_http.py")], env=local_env)
     time.sleep(3)
     if server.poll() is not None:
         sys.exit("HTTP server exited immediately — check mcp_http.py / .env.")
