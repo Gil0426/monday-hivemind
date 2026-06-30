@@ -47,6 +47,10 @@ mcp.settings.transport_security = TransportSecuritySettings(
 app = mcp.streamable_http_app()
 
 if __name__ == "__main__":
-    host = os.environ.get("HIVEMIND_HTTP_HOST", "127.0.0.1")
-    port = int(os.environ.get("HIVEMIND_HTTP_PORT", "8765"))
+    # Cloud hosts (Railway, Render, Fly, etc.) inject the port to bind via $PORT
+    # and require binding all interfaces. Locally, serve_remote.py sets
+    # HIVEMIND_HTTP_HOST=127.0.0.1 so the server stays localhost-only and the
+    # cloudflared tunnel is the sole entry point.
+    host = os.environ.get("HIVEMIND_HTTP_HOST", "0.0.0.0")
+    port = int(os.environ.get("PORT") or os.environ.get("HIVEMIND_HTTP_PORT") or "8765")
     uvicorn.run(app, host=host, port=port)
