@@ -116,6 +116,20 @@ Create a new specialist for marketing — campaign tracking, content calendars, 
 
 New specialists are generated on demand and saved to disk — commit them to share with the team.
 
+### Specialist library
+
+Pre-built specialists are available as standalone markdown files — teammates can grab just
+the one they need without cloning the full hivemind:
+
+**https://github.com/Gil0426/monday-hivemind-specialists**
+
+```bash
+# Install a specialist into your hivemind (from inside monday-hivemind/):
+git clone https://github.com/Gil0426/monday-hivemind-specialists /tmp/mh-lib
+cp -r /tmp/mh-lib/crm specialists/
+rm -rf /tmp/mh-lib
+```
+
 ---
 
 ## Add a specialist
