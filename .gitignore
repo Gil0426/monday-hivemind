@@ -15,6 +15,11 @@ env/
 # Environment variables — never commit
 .env
 
+# Remote-server runtime artifacts — contain the secret URL, or are noise
+CONNECTOR_URL.txt
+scratch_*.log
+scratch_*.txt
+
 # Uploaded user documents — commit only the placeholders
 inputs/*
 !inputs/.gitkeep
