@@ -207,6 +207,61 @@ List my available board specialists.
 Create a new specialist for marketing campaign tracking.
 ```
 
+> **Local only.** `claude_desktop_config.json` launches the server as a local process,
+> so its tools appear in the desktop app's own chat and in local Claude Code sessions
+> (which read a project `.mcp.json` instead). It does **not** reach Cowork or cloud chat —
+> see the next section for those.
+
+---
+
+## Use from Cowork or cloud chat (remote connector)
+
+Cowork and regular (cloud) Claude chat run on Anthropic's servers, not on your machine,
+so they can't launch a local script. They can only reach an MCP server that's online at a
+public URL. `serve_remote.py` puts the same three tools online behind a
+[cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)
+quick tunnel and prints a URL you add as a **custom connector**.
+
+**1. Install cloudflared** (one time):
+```
+Windows:  winget install Cloudflare.cloudflared
+macOS:    brew install cloudflared
+```
+
+**2. Start the remote server** (from the repo folder):
+```
+# Windows
+serve_remote.bat
+# Linux / macOS
+.venv/bin/python serve_remote.py
+```
+It generates a secret token (saved to `.env`), starts the HTTP server on `127.0.0.1`,
+opens the tunnel, and prints a **connector URL** like:
+```
+https://random-words.trycloudflare.com/mcp-<your-secret>
+```
+Leave the window open.
+
+**3. Add it as a custom connector** — in Claude, go to **Connectors → Add custom connector**,
+paste the URL into **Remote MCP server URL**, name it `monday-hivemind`, and click **Add**.
+The three tools now work in Cowork and cloud chat.
+
+### How it's secured
+The connector dialog only offers OAuth fields and no custom-header option, so the server's
+access control is a **secret path** baked into the URL (`/mcp-<token>`). Any request to the
+wrong path gets a 404. The server binds to `127.0.0.1` only — the tunnel is the sole way in —
+so keep the printed URL private. To allow tunnel traffic, `mcp_http.py` disables the MCP
+SDK's localhost-only Host check (DNS-rebinding protection); that protection guards browsers
+against hitting localhost servers and isn't your threat model here, since the secret path is
+the real lock.
+
+### Caveats
+- **Your machine must stay on** with `serve_remote.py` running while you use it remotely.
+- **Free tunnels rotate hostnames** — each restart prints a new URL, so re-paste it into the
+  connector. For a permanent URL, set up a
+  [named Cloudflare tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-remote-tunnel/)
+  with a domain you own and pin that host instead.
+
 ---
 
 ## Example terminal session
@@ -287,7 +342,9 @@ Drop `.txt` or `.pdf` files into `inputs/` to use them as requirements:
 ```
 monday-hivemind/
 ├── run.sh / run.bat            ← launchers (Linux/macOS / Windows)
-├── mcp_server.py               ← Claude desktop app integration
+├── mcp_server.py               ← local MCP server (stdio) for the desktop app
+├── mcp_http.py                 ← same tools over HTTP, for remote use
+├── serve_remote.py / .bat      ← start HTTP server + cloudflared tunnel (Cowork / cloud chat)
 ├── manager/
 │   └── manager.py              ← terminal interface
 ├── shared/                     ← stable engine (don't edit without team review)

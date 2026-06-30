@@ -1,3 +1,4 @@
 anthropic>=0.40.0
 pypdf>=4.0.0
 mcp>=1.0.0
+uvicorn>=0.30.0  # only needed for the remote HTTP server (mcp_http.py / serve_remote.py)
