@@ -1,123 +1,158 @@
 # monday.com Hivemind
 
-A team-maintained system of AI specialists that design monday.com boards faster and more
-accurately than monday's native AI. Each specialist is grounded in real monday.com
-documentation, not guessing.
+An AI-powered board design assistant for monday.com. Describe what you need — the Hivemind
+routes your request to the right specialist, reads real monday.com documentation, and returns
+a complete board plan before anything is written.
+
+Works from the terminal or directly inside the Claude desktop app.
 
 ---
 
-## Quick Start
+## What you need before starting
+
+- **Python 3.10 or higher** — check with `python3 --version`
+- **Git** — to clone the repo
+- **An Anthropic API key** — [get one here](https://console.anthropic.com/) (free to sign up, pay per use — a typical board design costs a few cents)
+
+---
+
+## Installation
+
+### 🐧 Linux
 
 ```bash
+# 1. Clone the repo
 git clone https://github.com/Gil0426/monday-hivemind.git
 cd monday-hivemind
 
+# 2. Create a virtual environment and install dependencies
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
+# 3. Add your API key
 cp .env.example .env
-```
+nano .env   # replace the placeholder with your key: ANTHROPIC_API_KEY=sk-ant-...
 
-Open `.env` and add your Anthropic API key (see below for how to get one):
-
-```bash
-ANTHROPIC_API_KEY=sk-ant-...
-```
-
-```bash
+# 4. Run it
 ./run.sh
 ```
 
-That's it. You'll see the specialist menu and a command prompt.
-
 ---
 
-## Windows setup
+### 🍎 macOS
 
-```powershell
+```bash
+# 1. Clone the repo
 git clone https://github.com/Gil0426/monday-hivemind.git
 cd monday-hivemind
 
-python -m venv .venv
-.venv\Scripts\activate
-
+# 2. Create a virtual environment and install dependencies
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 
+# 3. Add your API key
+cp .env.example .env
+open -e .env   # opens in TextEdit — replace the placeholder with your key
+
+# 4. Run it
+./run.sh
+```
+
+> If `python3` is not found, install it via [python.org](https://python.org) or Homebrew: `brew install python`
+
+---
+
+### 🪟 Windows
+
+Pick the option that matches your setup:
+
+#### Option A — PowerShell (native Windows)
+
+```powershell
+# 1. Clone the repo
+git clone https://github.com/Gil0426/monday-hivemind.git
+cd monday-hivemind
+
+# 2. Create a virtual environment and install dependencies
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+
+# 3. Add your API key
 copy .env.example .env
-# open .env in Notepad and add your ANTHROPIC_API_KEY
+notepad .env   # replace the placeholder with your key: ANTHROPIC_API_KEY=sk-ant-...
 
-run.bat
+# 4. Run it
+.\run.bat
 ```
 
-**Claude desktop app on Windows** — config file lives at:
-```
-%APPDATA%\Claude\claude_desktop_config.json
-```
+> If `python` is not found, download it from [python.org](https://python.org) — check **"Add Python to PATH"** during install, then restart your terminal.
 
-Add the MCP server using Windows paths:
-```json
-{
-  "mcpServers": {
-    "monday-hivemind": {
-      "command": "C:\\path\\to\\monday-hivemind\\.venv\\Scripts\\python.exe",
-      "args": ["C:\\path\\to\\monday-hivemind\\mcp_server.py"]
-    }
-  }
-}
+#### Option B — WSL / Ubuntu (Windows Subsystem for Linux)
+
+If you're using WSL, follow the Linux steps above exactly — it runs identically.
+
+```bash
+git clone https://github.com/Gil0426/monday-hivemind.git
+cd monday-hivemind
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+nano .env   # add your API key
+./run.sh
 ```
 
 ---
 
-## Getting an Anthropic API key
+## Getting your Anthropic API key
 
 1. Go to [console.anthropic.com](https://console.anthropic.com/) and sign in (or create a free account)
 2. Click **API Keys** in the left sidebar
-3. Click **Create Key**, give it a name (e.g. `monday-hivemind`), and copy it
+3. Click **Create Key**, give it a name like `monday-hivemind`, and copy it
 4. Paste it into your `.env` file:
    ```
    ANTHROPIC_API_KEY=sk-ant-...
    ```
 
-**Keep your key private.** Never commit `.env` to git, share it in chat, or post it publicly.
-If you accidentally expose it, go back to the Console, revoke it immediately, and create a new one.
-
-> The hivemind uses Claude Opus (for board design) and Claude Haiku (for routing).
-> Usage is billed to your Anthropic account per token — a typical board design session
-> costs a few cents.
+> **Keep your key private.** Never share it in chat, commit it to a public repo, or post it publicly.
+> If you accidentally expose it, go to the Console, revoke it immediately, and create a new one.
 
 ---
 
-## Daily use
+## Running it daily
 
-**Linux / macOS — from the folder:**
+**Linux / macOS:**
 ```bash
 ./run.sh
 ```
 
-**Linux / macOS — from anywhere (add to `~/.zshrc` or `~/.bashrc`):**
+**Windows (PowerShell):**
+```powershell
+.\run.bat
+```
+
+**From anywhere — add an alias so you can type `hivemind` in any terminal:**
+
+Linux / macOS (add to `~/.zshrc` or `~/.bashrc`):
 ```bash
 alias hivemind='bash /path/to/monday-hivemind/run.sh'
 ```
 
-**Windows — from the folder:**
-```bat
-run.bat
-```
-
-**Windows — from anywhere (add to your PowerShell profile or System PATH):**
+Windows PowerShell (add to your PowerShell profile):
 ```powershell
 Set-Alias hivemind "C:\path\to\monday-hivemind\run.bat"
 ```
 
 ---
 
-## Use from the Claude desktop app
+## Use from the Claude desktop app (no terminal needed)
 
-Register the MCP server once and the tools appear natively inside Claude — no terminal needed.
+Register the Hivemind as an MCP server once and its tools appear natively in every Claude chat.
 
-**1. Register the server** — add this block to `~/.config/Claude/claude_desktop_config.json`:
-
+**Linux / macOS** — edit `~/.config/Claude/claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
@@ -129,23 +164,47 @@ Register the MCP server once and the tools appear natively inside Claude — no 
 }
 ```
 
-**2. Restart the Claude desktop app.**
+**Windows (PowerShell)** — edit `%APPDATA%\Claude\claude_desktop_config.json`:
+```json
+{
+  "mcpServers": {
+    "monday-hivemind": {
+      "command": "C:\\path\\to\\monday-hivemind\\.venv\\Scripts\\python.exe",
+      "args": ["C:\\path\\to\\monday-hivemind\\mcp_server.py"]
+    }
+  }
+}
+```
 
-**3. Use it in chat** — Claude now has three tools from the hivemind:
+**Windows (WSL)** — edit `%APPDATA%\Claude\claude_desktop_config.json`:
+```json
+{
+  "mcpServers": {
+    "monday-hivemind": {
+      "command": "wsl",
+      "args": [
+        "-e",
+        "/home/<your-wsl-username>/monday-hivemind/.venv/bin/python",
+        "/home/<your-wsl-username>/monday-hivemind/mcp_server.py"
+      ]
+    }
+  }
+}
+```
+
+After editing, **restart the Claude desktop app**. You'll have three tools available in any chat:
 
 | Tool | What it does |
 |---|---|
-| `design_board` | Takes a description, routes to the best specialist, returns a full dry-run plan |
-| `list_specialists` | Shows available specialists and their domains |
+| `design_board` | Routes your request to the best specialist and returns a full dry-run board plan |
+| `list_specialists` | Shows all available specialists |
 | `create_specialist` | Generates and saves a new specialist on the fly |
 
-Example prompts in Claude chat:
+Example prompts:
 ```
-Design a CRM board for a 5-person sales team tracking deals, contacts, and pipeline value.
-
+Design a CRM board for a 5-person sales team.
 List my available board specialists.
-
-Create a new specialist for marketing — campaign tracking, content calendars, and social media.
+Create a new specialist for marketing campaign tracking.
 ```
 
 ---
@@ -157,7 +216,7 @@ Create a new specialist for marketing — campaign tracking, content calendars, 
 
   → Routing to: example-board-builder
 
-  [full dry-run board plan]
+  [dry-run board plan]
 
 > build --doc inputs/brief.pdf Build a CRM pipeline for our sales team
 
@@ -184,60 +243,41 @@ Create a new specialist for marketing — campaign tracking, content calendars, 
 | `crm` | Contacts, deals, sales pipeline (1- or 3-board CRM) |
 | `project-management` | Tasks, timelines, sprints, portfolio tracking |
 
-New specialists are generated on demand and saved to disk — commit them to share with the team.
-
-### Specialist library
-
-Pre-built specialists are available as standalone markdown files — teammates can grab just
-the one they need without cloning the full hivemind:
-
-**https://github.com/Gil0426/monday-hivemind-specialists**
-
-```bash
-# Install a specialist into your hivemind (from inside monday-hivemind/):
-git clone https://github.com/Gil0426/monday-hivemind-specialists /tmp/mh-lib
-cp -r /tmp/mh-lib/crm specialists/
-rm -rf /tmp/mh-lib
-```
+Browse and install individual specialists:
+**[github.com/Gil0426/monday-hivemind-specialists](https://github.com/Gil0426/monday-hivemind-specialists)**
 
 ---
 
 ## Add a specialist
 
-### From the terminal manager
+**From the terminal:**
 ```
 > new specialist
 ```
 
-### From Claude chat (MCP)
+**From Claude chat (MCP):**
 ```
 Create a specialist for [your domain]
 ```
 
-### Manually
+**Manually:**
 ```bash
 mkdir specialists/my-specialist
 # write specialists/my-specialist/persona.md  ← identity, approach, constraints
 # write specialists/my-specialist/reference.md ← column types, board structures, limitations
 ```
 
-Everything in `reference.md` must come from https://support.monday.com or https://developer.monday.com.
-The manager and MCP server pick up new specialists automatically — no registration needed.
+Specialists are picked up automatically on next run — no registration needed.
+Commit the folder to share with your team.
 
 ---
 
 ## Upload a document
 
-Drop `.txt` or `.pdf` files into `inputs/` and reference them:
+Drop `.txt` or `.pdf` files into `inputs/` to use them as requirements:
 
-**Terminal:**
 ```
 > build --doc inputs/brief.pdf Build this board
-```
-
-**Claude chat:**
-```
-Design a board from this document: inputs/brief.pdf
 ```
 
 ---
@@ -246,23 +286,18 @@ Design a board from this document: inputs/brief.pdf
 
 ```
 monday-hivemind/
-├── run.sh                      ← terminal launcher (use this daily)
+├── run.sh / run.bat            ← launchers (Linux/macOS / Windows)
 ├── mcp_server.py               ← Claude desktop app integration
 ├── manager/
-│   └── manager.py              ← terminal REPL
-├── shared/
-│   ├── agent_loop.py           ← stable engine; don't edit without team review
-│   ├── document_reader.py
-│   ├── monday_tools.py
-│   └── tool_registry.py
+│   └── manager.py              ← terminal interface
+├── shared/                     ← stable engine (don't edit without team review)
 ├── specialists/
 │   └── <name>/
 │       ├── persona.md          ← specialist identity + constraints
-│       └── reference.md        ← monday.com grounding doc for this domain
-├── references/                 ← shared curated docs (PDFs, notes)
+│       └── reference.md        ← monday.com grounding doc
 ├── inputs/                     ← drop requirement documents here
-├── requirements.txt
-└── .env.example
+├── references/                 ← shared team reference docs
+└── .env.example                ← copy to .env and add your API key
 ```
 
 ---
@@ -270,10 +305,9 @@ monday-hivemind/
 ## How it works
 
 ```
-You → Manager/Claude → routes to Specialist → reads persona + reference → designs board → dry-run plan
+You → Manager → routes to Specialist → reads docs → designs board → dry-run plan
 ```
 
-The Manager and MCP server both route your request to the best specialist. The specialist
-reads its grounding documentation (real monday.com docs, not guesses), designs the board
-using valid column types and structures, and outputs a complete dry-run plan before anything
-is written to monday.com.
+The Manager routes your request to the best specialist. The specialist reads its grounding
+documentation (real monday.com docs, not guesses) and outputs a complete dry-run plan —
+every board, group, column, and sample item — before anything is written to monday.com.
