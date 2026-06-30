@@ -33,6 +33,42 @@ That's it. You'll see the specialist menu and a command prompt.
 
 ---
 
+## Windows setup
+
+```powershell
+git clone https://github.com/Gil0426/monday-hivemind.git
+cd monday-hivemind
+
+python -m venv .venv
+.venv\Scripts\activate
+
+pip install -r requirements.txt
+
+copy .env.example .env
+# open .env in Notepad and add your ANTHROPIC_API_KEY
+
+run.bat
+```
+
+**Claude desktop app on Windows** — config file lives at:
+```
+%APPDATA%\Claude\claude_desktop_config.json
+```
+
+Add the MCP server using Windows paths:
+```json
+{
+  "mcpServers": {
+    "monday-hivemind": {
+      "command": "C:\\path\\to\\monday-hivemind\\.venv\\Scripts\\python.exe",
+      "args": ["C:\\path\\to\\monday-hivemind\\mcp_server.py"]
+    }
+  }
+}
+```
+
+---
+
 ## Getting an Anthropic API key
 
 1. Go to [console.anthropic.com](https://console.anthropic.com/) and sign in (or create a free account)
@@ -54,17 +90,25 @@ If you accidentally expose it, go back to the Console, revoke it immediately, an
 
 ## Daily use
 
-**From the terminal:**
+**Linux / macOS — from the folder:**
 ```bash
-# from inside monday-hivemind/
 ./run.sh
 ```
 
-**From anywhere (add to `~/.zshrc` or `~/.bashrc`):**
+**Linux / macOS — from anywhere (add to `~/.zshrc` or `~/.bashrc`):**
 ```bash
-alias hivemind='bash /home/giloliveira/Documents/Monday\ Board\ Builders/monday-hivemind/run.sh'
+alias hivemind='bash /path/to/monday-hivemind/run.sh'
 ```
-Then just type `hivemind` in any terminal window.
+
+**Windows — from the folder:**
+```bat
+run.bat
+```
+
+**Windows — from anywhere (add to your PowerShell profile or System PATH):**
+```powershell
+Set-Alias hivemind "C:\path\to\monday-hivemind\run.bat"
+```
 
 ---
 
