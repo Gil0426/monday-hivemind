@@ -17,12 +17,38 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 cp .env.example .env
-# open .env and add your ANTHROPIC_API_KEY
+```
 
+Open `.env` and add your Anthropic API key (see below for how to get one):
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+```bash
 ./run.sh
 ```
 
 That's it. You'll see the specialist menu and a command prompt.
+
+---
+
+## Getting an Anthropic API key
+
+1. Go to [console.anthropic.com](https://console.anthropic.com/) and sign in (or create a free account)
+2. Click **API Keys** in the left sidebar
+3. Click **Create Key**, give it a name (e.g. `monday-hivemind`), and copy it
+4. Paste it into your `.env` file:
+   ```
+   ANTHROPIC_API_KEY=sk-ant-...
+   ```
+
+**Keep your key private.** Never commit `.env` to git, share it in chat, or post it publicly.
+If you accidentally expose it, go back to the Console, revoke it immediately, and create a new one.
+
+> The hivemind uses Claude Opus (for board design) and Claude Haiku (for routing).
+> Usage is billed to your Anthropic account per token — a typical board design session
+> costs a few cents.
 
 ---
 
