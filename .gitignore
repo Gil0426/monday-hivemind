@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables — never commit
+.env
+
+# Uploaded user documents — commit only the placeholders
+inputs/*
+!inputs/.gitkeep
+
+# Shared reference uploads
+references/*
+!references/.gitkeep
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
