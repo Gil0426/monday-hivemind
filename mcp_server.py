@@ -34,6 +34,7 @@ import anthropic
 from mcp.server.fastmcp import FastMCP
 
 from shared.agent_loop import load_specialist, run as run_specialist, MODEL
+from shared.specialist_models import model_for
 
 # ── Specialist helpers (self-contained; avoids manager.py path assumptions) ───
 
@@ -96,15 +97,31 @@ mcp = FastMCP(
 )
 
 
+_MODEL_LABELS = {
+    "claude-opus-4-8": "Opus 4.8",
+    "claude-sonnet-5": "Sonnet 5",
+    "claude-haiku-4-5-20251001": "Haiku 4.5",
+}
+
+
+def _model_label(name: str) -> str:
+    """Short, human-readable model name for a specialist (from specialist_models.model_for)."""
+    return _MODEL_LABELS.get(model_for(name), model_for(name))
+
+
 @mcp.tool()
 def list_specialists() -> str:
-    """List all available monday.com board-building specialists and their domains."""
+    """List all monday.com board-building specialists, their domains, and the model each uses.
+
+    The model shown is the one that specialist actually runs on for board design
+    (set in shared/specialist_models.py) — not every specialist uses the same model.
+    """
     dirs = _find_dirs()
     if not dirs:
         return "No specialists found. Use create_specialist to add one."
-    lines = ["Available specialists:\n"]
+    lines = ["Available specialists (model = what each uses for board design):\n"]
     for d in dirs:
-        lines.append(f"  • {d.name:<30} {_tagline(d)}")
+        lines.append(f"  • {d.name:<24} [{_model_label(d.name):<9}] {_tagline(d)}")
     return "\n".join(lines)
 
 
@@ -143,20 +160,55 @@ def design_board(
 
 
 @mcp.tool()
-def create_specialist(name: str, domain: str) -> str:
+def create_specialist(
+    name: str,
+    purpose: str,
+    primary_users: str,
+    core_workflows: str,
+    key_boards_and_objects: str,
+    critical_columns: str,
+    known_limitations: str = "",
+) -> str:
     """
-    Generate and save a new specialist to the specialists/ folder.
-    The specialist is immediately available and can be committed to the shared git repo.
+    Create a new monday.com board-building specialist — only after gathering real
+    requirements. A specialist is only useful if it reflects how the team actually
+    works, so this tool REQUIRES that context up front instead of improvising it.
+
+    ASSISTANT INSTRUCTIONS — READ BEFORE CALLING:
+    Do NOT call this tool with guessed or invented values. First interview the user
+    and fill every field from their answers. For any field the user hasn't given you,
+    ask a specific, concrete question (e.g. "Who will use these boards day to day?",
+    "What are the must-have columns and what should each track?"). Ask about all
+    missing fields in one turn so it's quick. If the user genuinely doesn't know a
+    field, record what they said (e.g. "user unsure — confirm later") rather than
+    fabricating monday.com capabilities. Ground everything in real monday.com features
+    (https://support.monday.com, https://developer.monday.com).
 
     Args:
-        name:   Folder slug for the new specialist (e.g. 'marketing', 'service-desk').
-        domain: What boards this specialist covers — be descriptive, this becomes its reference doc.
+        name:                   Folder slug for the specialist (e.g. 'marketing', 'service-desk').
+        purpose:                What this specialist is for and when to route requests to it (1–2 sentences).
+        primary_users:          Who uses these boards and their roles (e.g. 'SDRs plus one sales manager').
+        core_workflows:         The main processes the boards must support, described step by step.
+        key_boards_and_objects: What's tracked and how it's structured — single board vs. multiple connected
+                                boards, and the main items/entities on each.
+        critical_columns:       Must-have columns and their monday.com column types
+                                (e.g. 'Stage (status), Value (numbers), Owner (people), Close date (date)').
+        known_limitations:      monday.com limits in this domain to respect (optional; leave blank if none known).
     """
     slug = name.lower().replace(" ", "-")
     target = SPECIALISTS_DIR / slug
 
     if target.exists():
         return f"Specialist '{slug}' already exists at specialists/{slug}/"
+
+    requirements = (
+        f"- Purpose / when to route here: {purpose}\n"
+        f"- Primary users: {primary_users}\n"
+        f"- Core workflows: {core_workflows}\n"
+        f"- Boards & objects: {key_boards_and_objects}\n"
+        f"- Critical columns: {critical_columns}\n"
+        f"- Known limitations: {known_limitations or '(none provided)'}"
+    )
 
     client = anthropic.Anthropic()
     response = client.messages.create(
@@ -165,17 +217,23 @@ def create_specialist(name: str, domain: str) -> str:
         messages=[{
             "role": "user",
             "content": (
-                f"Generate files for a new monday.com board-building specialist.\n\n"
-                f"Specialist name: {slug}\nDomain: {domain}\n\n"
+                f"Create files for a monday.com board-building specialist named '{slug}'.\n"
+                f"Use ONLY the requirements below. Do not invent capabilities — ground every "
+                f"column type, feature, and limitation in real monday.com behavior. If something "
+                f"in the requirements isn't possible in monday.com, say so under Limitations.\n\n"
+                f"Requirements gathered from the user:\n{requirements}\n\n"
                 f"Output EXACTLY this format:\n\n"
                 f"===PERSONA_START===\n"
-                f"[persona.md: identity, approach, hard constraints for this domain]\n"
+                f"[persona.md: identity; the specific domain and when to use this specialist; a "
+                f"step-by-step approach tuned to the workflows above; and hard constraints — what "
+                f"monday.com does NOT support in this domain]\n"
                 f"===PERSONA_END===\n\n"
                 f"===REFERENCE_START===\n"
-                f"[reference.md: column types table with type IDs, board structures, "
-                f"status label JSON, limitations section]\n"
-                f"===REFERENCE_END===\n\n"
-                f"Ground everything in real monday.com capabilities. Never invent features."
+                f"[reference.md: a column types table (column name → monday.com column type → why "
+                f"it's used here); the board structure (groups/columns, single vs. multi-board); "
+                f"example status label configurations as JSON; and a Limitations section. Every "
+                f"claim must reflect real monday.com capabilities.]\n"
+                f"===REFERENCE_END==="
             ),
         }],
     )
@@ -192,11 +250,13 @@ def create_specialist(name: str, domain: str) -> str:
     (target / "reference.md").write_text(reference + "\n", encoding="utf-8")
 
     return (
-        f"✓ Specialist '{slug}' created:\n"
+        f"✓ Specialist '{slug}' created from your requirements:\n"
         f"  specialists/{slug}/persona.md\n"
         f"  specialists/{slug}/reference.md\n\n"
-        f"Run: git add specialists/{slug}/ && git commit -m 'feat: add {slug} specialist'"
-        f" to share with your team."
+        f"It runs on {_model_label(slug)} for board design (default for new specialists; "
+        f"change it in shared/specialist_models.py).\n"
+        f"To keep it: git add specialists/{slug}/ && git commit -m 'feat: add {slug} specialist', "
+        f"then redeploy so it's live remotely."
     )
 
 
