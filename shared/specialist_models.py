@@ -25,14 +25,21 @@ DEFAULT_MODEL = SONNET
 # Per-specialist overrides. Add your own specialists here; anything omitted
 # uses DEFAULT_MODEL.
 MODELS: dict[str, str] = {
-    # High complexity → Opus
+    # High complexity → Opus (multi-board, nuanced structure)
     "crm": OPUS,
     "project-management": OPUS,
-    # Medium complexity → Sonnet
+    # Medium complexity → Sonnet (real design work)
+    "analytics-dashboards": SONNET,
+    "operational-dashboards": SONNET,
     "example-board-builder": SONNET,
     "automation-specialist": SONNET,
-    # Low complexity → Haiku (example — a simple, single-board specialist)
-    # "meeting-notes": HAIKU,
+    "ai-tools": SONNET,
+    "validation": SONNET,
+    "monday-ai": SONNET,
+    # Low complexity → Haiku (simple, mechanical single-board output)
+    "action-items": HAIKU,
+    "data-import": HAIKU,
+    "documentation": HAIKU,
 }
 
 
