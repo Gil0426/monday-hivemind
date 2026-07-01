@@ -16,8 +16,12 @@ import anthropic
 
 from shared.monday_tools import BuildPlan
 from shared.tool_registry import get_specialist_tools
+from shared.specialist_models import model_for
 
 
+# Default/builder model. Per-specialist board-design models live in
+# shared/specialist_models.py (see model_for). This constant is kept for the
+# specialist-file *generation* step in mcp_server.py / manager.py.
 MODEL = "claude-opus-4-8"
 MAX_TOKENS = 4096
 
@@ -106,6 +110,7 @@ def run(
     plan = BuildPlan()
     tool_defs, handlers = get_specialist_tools(plan)
     system = _build_system_prompt(specialist)
+    model = model_for(specialist.name)
 
     # If a document was uploaded, ask the specialist to read it first
     if document_path:
@@ -121,7 +126,7 @@ def run(
 
     while True:
         response = client.messages.create(
-            model=MODEL,
+            model=model,
             max_tokens=MAX_TOKENS,
             system=system,
             tools=tool_defs,
